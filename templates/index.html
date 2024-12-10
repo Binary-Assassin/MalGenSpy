@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #282c34;
+            color: #61dafb;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 14px;
+            border-radius: 5px;
+            overflow: auto;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+    <script>
+        async function sendQuestion() {
+            const question = document.getElementById("question").value;
+
+            // Clear the response area before making the request
+            document.getElementById("response").innerText = "Loading...";
+
+            try {
+                const response = await fetch("/ask", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ question: question }),
+                });
+
+                const data = await response.json();
+
+                if (data.code) {
+                    // Display the returned code in a pre-formatted text box
+                    document.getElementById("response").innerText = data.code;
+
+                    // Save the code in local storage for editing
+                    localStorage.setItem("code", data.code);
+                } else if (data.error) {
+                    // Display errors if any
+                    document.getElementById("response").innerText = "Error: " + data.error;
+                }
+            } catch (error) {
+                // Handle fetch or network errors
+                document.getElementById("response").innerText = "Error: " + error.message;
+            }
+        }
+
+        function editCode() {
+            const code = document.getElementById("response").innerText;
+
+            if (code === "Loading..." || !code) {
+                alert("No code available to edit.");
+                return;
+            }
+
+            // Save the code to local storage for editing and redirect to edit page
+            localStorage.setItem("code", code);
+            window.location.href = "/edit";
+        }
+    </script>
+</head>
+<body>
+    <h1>AI Code Assistant</h1>
+    <textarea id="question" placeholder="Ask something..."></textarea>
+    <div class="button-group">
+        <button onclick="sendQuestion()">Submit</button>
+        <button onclick="editCode()">Edit</button>
+    </div>
+    <pre id="response"></pre> <!-- Pre-formatted response section -->
+</body>
+</html>
